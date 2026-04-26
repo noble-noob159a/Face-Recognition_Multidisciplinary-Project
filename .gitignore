@@ -75,3 +75,4 @@ htmlcov/
 *.swo
 *.jpg
 *.pkl
+test.py
