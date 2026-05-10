@@ -76,3 +76,4 @@ htmlcov/
 *.jpg
 *.pkl
 test.py
+face_db/

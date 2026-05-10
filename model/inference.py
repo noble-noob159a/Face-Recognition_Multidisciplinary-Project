@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import argparse
 from scipy.spatial.distance import cosine
-from register import load_database
+from .register import load_database
 from insightface.app import FaceAnalysis
 
 DEFAULT_DB_FILE = "./face_db/insightface_db.pkl"
