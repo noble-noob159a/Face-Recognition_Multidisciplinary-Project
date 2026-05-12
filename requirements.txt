@@ -3,4 +3,9 @@ insightface ; sys_platform != 'win32'
 onnxruntime-gpu
 scipy
 opencv-python==4.11.0.86
-numpy==1.26.4
+numpy #==1.26.4
+ml_dtypes>=0.5.0
+paho-mqtt
+flask
+flask-socketio
+python-dotenv

@@ -1,6 +1,10 @@
 import cv2
 import numpy as np
 import argparse
+import json
+import os
+import paho.mqtt.client as mqtt
+from dotenv import load_dotenv
 from scipy.spatial.distance import cosine
 from .register import load_database
 from insightface.app import FaceAnalysis
@@ -13,13 +17,34 @@ DEFAULT_CTX_ID = 0
 DEFAULT_DET_SIZE = 640
 DEFAULT_WINDOW_NAME = "InsightFace Video Inference"
 
-# MQTT_BROKER = "mqtt.ohstem.vn"
-# MQTT_PORT = 1883
-# MQTT_TOPIC = "yolobit/face_identity"
+def create_mqtt_client():
+    load_dotenv()
 
-# client = mqtt.Client()
-# client.connect(MQTT_BROKER, MQTT_PORT, 60)
-# client.loop_start()
+    broker = os.getenv("MQTT_BROKER", "mqtt.ohstem.vn")
+    port = int(os.getenv("MQTT_PORT", "1883"))
+    username = os.getenv("MQTT_USERNAME", "")
+    password = os.getenv("MQTT_PASSWORD", "")
+
+    client = mqtt.Client()
+    if username:
+        client.username_pw_set(username, password)
+    client.reconnect_delay_set(min_delay=1, max_delay=30)
+    client.connect(broker, port, 60)
+    client.loop_start()
+    return client
+
+
+def publish_detection(client, name):
+    topic = os.getenv("MQTT_TOPIC_RESULT", "face/result")
+    payload_name = name if name.upper() != "UNKNOWN" else "UNKNOWN"
+    payload = json.dumps({"name": payload_name})
+
+    try:
+        if not client.is_connected():
+            client.reconnect()
+        client.publish(topic, payload)
+    except Exception as exc:
+        print(f"MQTT publish failed: {exc}")
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Run real-time InsightFace recognition from webcam.")
@@ -70,6 +95,7 @@ def parse_args():
 
 def main():
     args = parse_args()
+    mqtt_client = create_mqtt_client()
 
     # Init InsightFace
     print("Loading InsightFace models...")
@@ -128,7 +154,7 @@ def main():
                     "box": (x1, y1, x2, y2)
                 })
 
-                # client.publish(MQTT_TOPIC, name)
+                publish_detection(mqtt_client, name)
 
             latest_detections = current_frame_detections
 
@@ -146,7 +172,8 @@ def main():
 
     video_capture.release()
     cv2.destroyAllWindows()
-    # client.loop_stop()
+    mqtt_client.loop_stop()
+    mqtt_client.disconnect()
 
 
 if __name__ == "__main__":
