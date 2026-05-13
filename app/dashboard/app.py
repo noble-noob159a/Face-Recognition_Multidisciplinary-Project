@@ -5,6 +5,7 @@ from flask import Flask, render_template
 from flask_socketio import SocketIO
 
 from app.backend import mqtt_bridge
+from app.backend.register import register_bp
 
 load_dotenv()
 
@@ -12,13 +13,15 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "face-demo-secret")
 socketio = SocketIO(app, cors_allowed_origins="*")
 
+app.register_blueprint(register_bp)
+
 mqtt_bridge.attach_socketio(socketio)
 mqtt_bridge.start_mqtt(background=True)
 
 
 @app.route("/")
 def index():
-    return render_template("index.html", ws_url=os.getenv("WS_URL", ""))
+    return render_template("index.html", ws_url=os.getenv("WS_URL", ""), api_url=os.getenv("API_URL", ""))
 
 
 if __name__ == "__main__":

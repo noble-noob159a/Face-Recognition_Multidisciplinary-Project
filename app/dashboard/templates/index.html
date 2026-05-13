@@ -9,14 +9,8 @@
 </head>
 <body class="min-h-screen bg-slate-100 text-slate-900">
   <main class="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
-    <section id="statusCard" class="rounded-lg bg-slate-700 p-8 text-white shadow-sm transition-colors">
-      <p class="text-sm font-semibold uppercase tracking-wide text-white/75">Current detection</p>
-      <div class="mt-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <h1 id="currentName" class="break-words text-5xl font-bold tracking-normal sm:text-7xl">Waiting...</h1>
-        <p id="currentStatus" class="text-2xl font-semibold text-white/90">No signal</p>
-      </div>
-    </section>
-
+    
+    <!-- 1. Camera stream -->
     <section id="cameraStream" class="overflow-hidden rounded-lg bg-white shadow-sm">
       <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
         <h2 class="text-xl font-semibold">Camera Stream</h2>
@@ -36,37 +30,63 @@
       </div>
     </section>
 
-    <section class="overflow-hidden rounded-lg bg-white shadow-sm">
-      <div class="border-b border-slate-200 px-5 py-4">
-        <h2 class="text-xl font-semibold">Recognition Log</h2>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full min-w-[520px] text-left">
-          <thead class="bg-slate-50 text-sm uppercase text-slate-500">
-            <tr>
-              <th class="px-5 py-3 font-semibold">Time</th>
-              <th class="px-5 py-3 font-semibold">Name</th>
-              <th class="px-5 py-3 font-semibold">Status</th>
-            </tr>
-          </thead>
-          <tbody id="logBody" class="divide-y divide-slate-200 text-base">
-            <tr>
-              <td colspan="3" class="px-5 py-8 text-center text-slate-500">Waiting for face events...</td>
-            </tr>
-          </tbody>
-        </table>
+    <!-- 2. Current detection result -->
+    <section id="statusCard" class="rounded-lg bg-slate-700 p-8 text-white shadow-sm transition-colors">
+      <p class="text-sm font-semibold uppercase tracking-wide text-white/75">Current detection</p>
+      <div class="mt-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <h1 id="currentName" class="break-words text-5xl font-bold tracking-normal sm:text-7xl">Waiting...</h1>
+        <p id="currentStatus" class="text-2xl font-semibold text-white/90">No signal</p>
       </div>
     </section>
+
+    <!-- 3. Register new face -->
+    <section id="faceRegister" class="overflow-hidden rounded-lg bg-white shadow-sm">
+      <div class="border-b border-slate-200 px-5 py-4">
+        <h2 class="text-xl font-semibold">Register New Face</h2>
+      </div>
+      <div class="p-5">
+        <form id="registerForm" class="flex flex-col gap-4">
+          <div>
+            <label for="registerName" class="block text-sm font-medium text-slate-700">Person's name</label>
+            <input type="text" id="registerName" name="name" required class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm border p-2">
+          </div>
+          <div>
+            <label for="registerImage" class="block text-sm font-medium text-slate-700">Upload face photo</label>
+            <input type="file" id="registerImage" name="image" accept="image/*" required class="mt-1 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-slate-50 file:text-slate-700 hover:file:bg-slate-100">
+          </div>
+          <div id="imagePreviewContainer" class="hidden">
+            <p class="text-sm font-medium text-slate-700 mb-2">Preview</p>
+            <img id="imagePreview" class="h-48 w-48 object-cover rounded-md border border-slate-200" alt="Preview">
+          </div>
+          <div id="registerMessage" class="hidden text-sm font-medium p-3 rounded-md"></div>
+          <div>
+            <button type="submit" id="registerSubmit" class="inline-flex justify-center rounded-md border border-transparent bg-slate-700 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 disabled:opacity-50">
+              Register
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- 4. YoloBit board log -->
+    <section id="yoloBitLog" class="overflow-hidden rounded-lg bg-white shadow-sm">
+      <div class="border-b border-slate-200 px-5 py-4">
+        <h2 class="text-xl font-semibold">YoloBit Board Log</h2>
+      </div>
+      <div class="p-5 text-slate-500 text-center">
+        Waiting for YoloBit data...
+      </div>
+    </section>
+
   </main>
 
   <script>
     window.CAMERA_WS_URL = {{ ws_url|tojson }};
+    window.API_URL = {{ api_url|tojson }};
     const socket = io();
     const statusCard = document.getElementById("statusCard");
     const currentName = document.getElementById("currentName");
     const currentStatus = document.getElementById("currentStatus");
-    const logBody = document.getElementById("logBody");
-    let events = [];
 
     function isRecognized(event) {
       return event.name && event.name.toUpperCase() !== "UNKNOWN";
@@ -76,16 +96,6 @@
       return isRecognized(event) ? "Recognized" : "Unknown";
     }
 
-    function escapeHtml(value) {
-      return String(value).replace(/[&<>"']/g, (char) => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;"
-      }[char]));
-    }
-
     function updateStatus(event) {
       currentName.textContent = event.name;
       currentStatus.textContent = statusText(event);
@@ -93,46 +103,17 @@
         (isRecognized(event) ? "bg-emerald-600" : "bg-red-600");
     }
 
-    function renderLog() {
-      if (events.length === 0) {
-        logBody.innerHTML = '<tr><td colspan="3" class="px-5 py-8 text-center text-slate-500">Waiting for face events...</td></tr>';
-        return;
-      }
-
-      logBody.innerHTML = events.map((event) => {
-        const recognized = isRecognized(event);
-        const badgeClass = recognized ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700";
-        const timestamp = escapeHtml(event.timestamp);
-        const name = escapeHtml(event.name);
-        return `
-          <tr class="bg-white">
-            <td class="px-5 py-4 font-medium text-slate-700">${timestamp}</td>
-            <td class="px-5 py-4 font-semibold">${name}</td>
-            <td class="px-5 py-4">
-              <span class="inline-flex rounded-full px-3 py-1 text-sm font-semibold ${badgeClass}">
-                ${statusText(event)}
-              </span>
-            </td>
-          </tr>
-        `;
-      }).join("");
-    }
-
     socket.on("face_log", (log) => {
-      events = log || [];
-      if (events.length > 0) {
-        updateStatus(events[0]);
+      if (log && log.length > 0) {
+        updateStatus(log[0]);
       }
-      renderLog();
     });
 
     socket.on("face_event", (event) => {
-      events.unshift(event);
-      events = events.slice(0, 50);
       updateStatus(event);
-      renderLog();
     });
   </script>
   <script src="{{ url_for('static', filename='camera_stream.js') }}"></script>
+  <script src="{{ url_for('static', filename='face_register.js') }}"></script>
 </body>
 </html>
