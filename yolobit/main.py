@@ -48,5 +48,4 @@ if True:
 while True:
   mqtt.check_message()
   event_manager.run()
-  # time.sleep_ms(10)
   time.sleep_ms(100)

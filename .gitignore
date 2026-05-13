@@ -39,7 +39,6 @@ venv.bak/
 # Logs & databases
 # =========================
 *.log
-*.sqlite3
 
 # =========================
 # OS files

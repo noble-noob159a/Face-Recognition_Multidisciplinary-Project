@@ -90,6 +90,5 @@ def start_mqtt(background=False):
 
     return mqtt_client
 
-
 if __name__ == "__main__":
     start_mqtt()
