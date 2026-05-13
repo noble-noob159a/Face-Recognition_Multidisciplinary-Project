@@ -122,11 +122,20 @@ def main():
     print("Starting InsightFace inference... Press 'q' to quit.")
     frame_count = 0
     latest_detections = []
+    last_db_mtime = os.path.getmtime(args.db_file) if os.path.exists(args.db_file) else 0
 
     while True:
         ret, frame = video_capture.read()
         if not ret:
             break
+        current_mtime = os.path.getmtime(args.db_file) if os.path.exists(args.db_file) else 0
+        if current_mtime > last_db_mtime:
+            print("Database modification detected! Reloading database...")
+            db = load_database(args.db_file)
+            known_face_names = list(db.keys())
+            known_face_encodings = np.array(list(db.values()))
+            last_db_mtime = current_mtime
+            print(f"Reloaded {len(known_face_names)} identities.")
 
         frame_count += 1
         should_broadcast = False

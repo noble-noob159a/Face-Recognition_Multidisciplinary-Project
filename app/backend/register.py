@@ -42,8 +42,8 @@ def register_api():
         register_face(name=name, image_path=tmp_path)
     except Exception as e:
         return jsonify({"error": str(e)}), 422
-    finally:
-        if os.path.exists(tmp_path):
-            os.remove(tmp_path)
+    # finally:
+        # if os.path.exists(tmp_path):
+        #     os.remove(tmp_path)
             
     return jsonify({"success": True, "name": name}), 200
