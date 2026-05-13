@@ -18,7 +18,7 @@ mqtt_bridge.start_mqtt(background=True)
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("index.html", ws_url=os.getenv("WS_URL", ""))
 
 
 if __name__ == "__main__":

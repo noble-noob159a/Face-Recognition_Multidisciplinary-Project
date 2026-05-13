@@ -9,3 +9,4 @@ paho-mqtt
 flask
 flask-socketio
 python-dotenv
+websockets>=12.0

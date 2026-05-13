@@ -7,6 +7,7 @@ import paho.mqtt.client as mqtt
 from dotenv import load_dotenv
 from scipy.spatial.distance import cosine
 from .register import load_database
+from .ws_server import broadcast_frame, run_ws_server_in_thread, stop_ws_server
 from insightface.app import FaceAnalysis
 import time
 
@@ -97,6 +98,7 @@ def parse_args():
 def main():
     args = parse_args()
     mqtt_client = create_mqtt_client()
+    run_ws_server_in_thread()
 
     # Init InsightFace
     print("Loading InsightFace models...")
@@ -114,6 +116,7 @@ def main():
     video_capture = cv2.VideoCapture(args.camera_index, cv2.CAP_DSHOW)
     if not video_capture.isOpened():
         print(f"Error: Could not open camera index {args.camera_index}.")
+        stop_ws_server()
         return
 
     print("Starting InsightFace inference... Press 'q' to quit.")
@@ -126,9 +129,11 @@ def main():
             break
 
         frame_count += 1
+        should_broadcast = False
 
         if frame_count % args.frame_skip == 0:
             frame_count = 0
+            should_broadcast = True
 
             # Inference
             faces = app.get(frame)
@@ -167,6 +172,9 @@ def main():
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
             cv2.putText(frame, name, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
 
+        if should_broadcast:
+            broadcast_frame(frame)
+
         cv2.imshow(DEFAULT_WINDOW_NAME, frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
@@ -177,6 +185,7 @@ def main():
     cv2.destroyAllWindows()
     mqtt_client.loop_stop()
     mqtt_client.disconnect()
+    stop_ws_server()
 
 
 if __name__ == "__main__":
