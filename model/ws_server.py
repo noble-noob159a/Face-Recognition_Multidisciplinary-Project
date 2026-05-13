@@ -1,6 +1,8 @@
 import asyncio
 import os
 import threading
+import json
+import time
 
 import cv2
 import websockets
@@ -9,9 +11,11 @@ import websockets
 HOST = "0.0.0.0"
 DEFAULT_PORT = 8765
 CAMERA_PATH = "/ws/camera"
+BOARD_LOG_PATH = "/ws/board-log"
 JPEG_QUALITY = 70
 
 connected_clients = set()
+serial_clients = set()
 _loop = None
 _server = None
 _thread = None
@@ -23,15 +27,21 @@ async def _handle_client(websocket, path=None):
     if request_path is None and hasattr(websocket, "request"):
         request_path = getattr(websocket.request, "path", None)
 
-    if request_path != CAMERA_PATH:
+    if request_path == CAMERA_PATH:
+        connected_clients.add(websocket)
+        try:
+            await websocket.wait_closed()
+        finally:
+            connected_clients.discard(websocket)
+    elif request_path == BOARD_LOG_PATH:
+        serial_clients.add(websocket)
+        try:
+            await websocket.wait_closed()
+        finally:
+            serial_clients.discard(websocket)
+    else:
         await websocket.close(code=1008, reason="Unsupported path")
         return
-
-    connected_clients.add(websocket)
-    try:
-        await websocket.wait_closed()
-    finally:
-        connected_clients.discard(websocket)
 
 
 async def _start_server():
@@ -69,6 +79,14 @@ async def _close_clients():
             return_exceptions=True,
         )
     connected_clients.clear()
+
+    s_clients = list(serial_clients)
+    if s_clients:
+        await asyncio.gather(
+            *(client.close(code=1001, reason="Inference stopped") for client in s_clients),
+            return_exceptions=True,
+        )
+    serial_clients.clear()
 
     if _server is not None:
         _server.close()
@@ -122,3 +140,14 @@ def broadcast_frame(frame):
         return
 
     asyncio.run_coroutine_threadsafe(_broadcast_payload(buf.tobytes()), _loop)
+
+async def _broadcast_serial_payload(payload):
+    if serial_clients:
+        websockets.broadcast(serial_clients, payload)
+
+def broadcast_serial_line(line):
+    if _loop is None or not serial_clients:
+        return
+
+    payload = json.dumps({"ts": time.time(), "line": line})
+    asyncio.run_coroutine_threadsafe(_broadcast_serial_payload(payload), _loop)

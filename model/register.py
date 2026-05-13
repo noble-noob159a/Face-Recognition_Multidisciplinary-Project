@@ -51,8 +51,10 @@ def register_face(name, image_path=None, use_webcam=False, db_file=DB_FILE):
             save_database(db, db_file)
             print(f"Success! '{name}' registered to the database.")
         elif len(faces) == 0:
+            raise ValueError("Error: No face detected in the image.")
             print("Error: No face detected in the image.")
         else:
+            raise ValueError(f"Error: Detected {len(faces)} faces in the image. Please use a photo with only one face.")
             print(f"Error: Detected {len(faces)} faces in the image. Please use a photo with only one face.")
 
     # MODE 2: Register from Webcam

@@ -6,17 +6,37 @@
   <title>Face Recognition Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+    .dashboard {
+      display: grid;
+      grid-template-columns: 7fr 3fr;
+      grid-template-rows: 1fr 1fr;
+      height: 100vh;
+      width: 100vw;
+      gap: 1rem;
+      padding: 1rem;
+      box-sizing: border-box;
+    }
+    .panel-detection  { grid-column: 1; grid-row: 1; }
+    .panel-camera     { grid-column: 1; grid-row: 2; }
+    .panel-register   { grid-column: 2; grid-row: 1; }
+    .panel-log        { grid-column: 2; grid-row: 2; }
+  </style>
 </head>
-<body class="min-h-screen bg-slate-100 text-slate-900">
-  <main class="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
+<body class="bg-slate-100 text-slate-900">
+  <main class="dashboard">
     
     <!-- 1. Camera stream -->
-    <section id="cameraStream" class="overflow-hidden rounded-lg bg-white shadow-sm">
-      <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+    <section id="cameraStream" class="panel-camera overflow-hidden rounded-lg bg-white shadow-sm flex flex-col h-full">
+      <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4 shrink-0">
         <h2 class="text-xl font-semibold">Camera Stream</h2>
         <span data-camera-state class="inline-flex rounded-full bg-slate-200 px-3 py-1 text-sm font-semibold text-slate-600">Connecting</span>
       </div>
-      <div class="relative aspect-video bg-slate-200">
+      <div class="relative flex-1 bg-slate-200">
         <img data-camera-img class="hidden h-full w-full object-cover" alt="Live annotated camera stream">
         <div data-camera-placeholder class="absolute inset-0 flex flex-col items-center justify-center text-slate-500">
           <div class="h-8 w-8 animate-spin rounded-full border-4 border-slate-300 border-t-slate-600"></div>
@@ -31,7 +51,7 @@
     </section>
 
     <!-- 2. Current detection result -->
-    <section id="statusCard" class="rounded-lg bg-slate-700 p-8 text-white shadow-sm transition-colors">
+    <section id="statusCard" class="panel-detection rounded-lg bg-slate-700 p-8 text-white shadow-sm transition-colors flex flex-col justify-center h-full">
       <p class="text-sm font-semibold uppercase tracking-wide text-white/75">Current detection</p>
       <div class="mt-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <h1 id="currentName" class="break-words text-5xl font-bold tracking-normal sm:text-7xl">Waiting...</h1>
@@ -40,11 +60,11 @@
     </section>
 
     <!-- 3. Register new face -->
-    <section id="faceRegister" class="overflow-hidden rounded-lg bg-white shadow-sm">
-      <div class="border-b border-slate-200 px-5 py-4">
+    <section id="faceRegister" class="panel-register overflow-hidden rounded-lg bg-white shadow-sm flex flex-col h-full">
+      <div class="border-b border-slate-200 px-5 py-4 shrink-0">
         <h2 class="text-xl font-semibold">Register New Face</h2>
       </div>
-      <div class="p-5">
+      <div class="p-5 overflow-y-auto flex-1">
         <form id="registerForm" class="flex flex-col gap-4">
           <div>
             <label for="registerName" class="block text-sm font-medium text-slate-700">Person's name</label>
@@ -69,12 +89,15 @@
     </section>
 
     <!-- 4. YoloBit board log -->
-    <section id="yoloBitLog" class="overflow-hidden rounded-lg bg-white shadow-sm">
-      <div class="border-b border-slate-200 px-5 py-4">
+    <section id="yoloBitLog" class="panel-log overflow-hidden rounded-lg bg-white shadow-sm flex flex-col h-full">
+      <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4 shrink-0">
         <h2 class="text-xl font-semibold">YoloBit Board Log</h2>
+        <div class="flex items-center gap-3">
+          <span id="serialState" class="inline-flex rounded-full bg-slate-200 px-3 py-1 text-sm font-semibold text-slate-600"><span class="animate-pulse">_</span> Connecting to board...</span>
+          <button id="serialReconnect" type="button" class="hidden rounded-md bg-slate-700 px-3 py-1 text-sm font-semibold text-white hover:bg-slate-800">Reconnect</button>
+        </div>
       </div>
-      <div class="p-5 text-slate-500 text-center">
-        Waiting for YoloBit data...
+      <div id="serialLogContainer" class="p-4 font-mono text-sm overflow-y-auto flex-1 bg-[#0d1117]" style="font-family: 'Courier New', monospace;">
       </div>
     </section>
 
@@ -99,7 +122,7 @@
     function updateStatus(event) {
       currentName.textContent = event.name;
       currentStatus.textContent = statusText(event);
-      statusCard.className = "rounded-lg p-8 text-white shadow-sm transition-colors " +
+      statusCard.className = "panel-detection rounded-lg p-8 text-white shadow-sm transition-colors flex flex-col justify-center h-full " +
         (isRecognized(event) ? "bg-emerald-600" : "bg-red-600");
     }
 
@@ -115,5 +138,6 @@
   </script>
   <script src="{{ url_for('static', filename='camera_stream.js') }}"></script>
   <script src="{{ url_for('static', filename='face_register.js') }}"></script>
+  <script src="{{ url_for('static', filename='board_log.js') }}"></script>
 </body>
 </html>
