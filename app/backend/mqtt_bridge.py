@@ -14,7 +14,6 @@ PASSWORD = os.getenv("MQTT_PASSWORD", "")
 TOPIC_RESULT = os.getenv("MQTT_TOPIC_RESULT", "face/result")
 TOPIC_YOLOBIT = os.getenv("MQTT_TOPIC_YOLOBIT", "V1")
 
-event_log = []
 socketio = None
 mqtt_client = None
 prev = '-1'
@@ -22,10 +21,6 @@ prev = '-1'
 def attach_socketio(socketio_instance):
     global socketio
     socketio = socketio_instance
-
-    @socketio.on("connect")
-    def handle_connect():
-        socketio.emit("face_log", event_log)
 
 
 def on_connect(client, userdata, flags, rc):
@@ -61,8 +56,6 @@ def on_message(client, userdata, msg):
             "status": status,
             "timestamp": datetime.now().strftime("%H:%M:%S"),
         }
-        event_log.insert(0, event)
-        del event_log[50:]
 
         if socketio:
             socketio.emit("face_event", event)

@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from scipy.spatial.distance import cosine
 from .register import load_database
 from .ws_server import broadcast_frame, run_ws_server_in_thread, stop_ws_server
-from .serial_reader import start_serial_reader, stop_serial_reader
+# from .serial_reader import start_serial_reader, stop_serial_reader
 from insightface.app import FaceAnalysis
 import time
 
@@ -100,7 +100,7 @@ def main():
     args = parse_args()
     mqtt_client = create_mqtt_client()
     run_ws_server_in_thread()
-    start_serial_reader()
+    # start_serial_reader()
 
     # Init InsightFace
     print("Loading InsightFace models...")
@@ -119,7 +119,7 @@ def main():
     if not video_capture.isOpened():
         print(f"Error: Could not open camera index {args.camera_index}.")
         stop_ws_server()
-        stop_serial_reader()
+        # stop_serial_reader()
         return
 
     print("Starting InsightFace inference... Press 'q' to quit.")
@@ -198,7 +198,7 @@ def main():
     mqtt_client.loop_stop()
     mqtt_client.disconnect()
     stop_ws_server()
-    stop_serial_reader()
+    # stop_serial_reader()
 
 
 if __name__ == "__main__":

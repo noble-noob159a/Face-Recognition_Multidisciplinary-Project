@@ -78,3 +78,4 @@ htmlcov/
 *.pkl
 test.py
 face_db/
+tmp_uploads/

@@ -11,7 +11,6 @@ import websockets
 HOST = "0.0.0.0"
 DEFAULT_PORT = 8765
 CAMERA_PATH = "/ws/camera"
-BOARD_LOG_PATH = "/ws/board-log"
 JPEG_QUALITY = 70
 
 connected_clients = set()
@@ -33,12 +32,6 @@ async def _handle_client(websocket, path=None):
             await websocket.wait_closed()
         finally:
             connected_clients.discard(websocket)
-    elif request_path == BOARD_LOG_PATH:
-        serial_clients.add(websocket)
-        try:
-            await websocket.wait_closed()
-        finally:
-            serial_clients.discard(websocket)
     else:
         await websocket.close(code=1008, reason="Unsupported path")
         return
@@ -140,14 +133,3 @@ def broadcast_frame(frame):
         return
 
     asyncio.run_coroutine_threadsafe(_broadcast_payload(buf.tobytes()), _loop)
-
-async def _broadcast_serial_payload(payload):
-    if serial_clients:
-        websockets.broadcast(serial_clients, payload)
-
-def broadcast_serial_line(line):
-    if _loop is None or not serial_clients:
-        return
-
-    payload = json.dumps({"ts": time.time(), "line": line})
-    asyncio.run_coroutine_threadsafe(_broadcast_serial_payload(payload), _loop)
