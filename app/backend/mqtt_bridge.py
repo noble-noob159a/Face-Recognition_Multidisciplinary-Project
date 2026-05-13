@@ -17,7 +17,7 @@ TOPIC_YOLOBIT = os.getenv("MQTT_TOPIC_YOLOBIT", "V1")
 event_log = []
 socketio = None
 mqtt_client = None
-
+prev = '-1'
 
 def attach_socketio(socketio_instance):
     global socketio
@@ -40,6 +40,7 @@ def on_disconnect(client, userdata, rc):
 
 
 def on_message(client, userdata, msg):
+    global prev
     try:
         payload = msg.payload.decode()
         print("\nReceived:", payload)
@@ -49,8 +50,11 @@ def on_message(client, userdata, msg):
 
         status = "Recognized" if name != "UNKNOWN" else "Unknown"
 
-        client.publish(TOPIC_YOLOBIT, name)
-        print(f"Published to {TOPIC_YOLOBIT}: {name}")
+        if name != prev:
+            # print(f"Status: {status} - {name}")
+            client.publish(TOPIC_YOLOBIT, name, retain=True)
+            print(f"Published to {TOPIC_YOLOBIT}: {name}")
+            prev = name
 
         event = {
             "name": name,

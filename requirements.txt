@@ -1,10 +1,10 @@
-insightface @ https://github.com/Gourieff/Assets/raw/main/Insightface/insightface-0.7.3-cp311-cp311-win_amd64.whl ; sys_platform == 'win32' and python_version == '3.11'
-insightface ; sys_platform != 'win32'
-onnxruntime-gpu
-scipy
-opencv-python==4.11.0.86
-numpy #==1.26.4
-ml_dtypes>=0.5.0
+# insightface @ https://github.com/Gourieff/Assets/raw/main/Insightface/insightface-0.7.3-cp311-cp311-win_amd64.whl ; sys_platform == 'win32' and python_version == '3.11'
+# insightface ; sys_platform != 'win32'
+# onnxruntime-gpu
+# scipy
+# opencv-python==4.11.0.86
+# numpy==1.26.4
+# ml_dtypes>=0.5.0
 paho-mqtt
 flask
 flask-socketio

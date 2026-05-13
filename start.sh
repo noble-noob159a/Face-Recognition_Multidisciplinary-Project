@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 source .venv/bin/activate
-python -m app.dashboard.app & python -m model.inference; wait
+py -3.11 -m app.dashboard.app & py -3.11 -m model.inference; 

@@ -1,0 +1,31 @@
+{
+  "folders": [
+    {
+      "path": ".",
+      "name": "Yolobit MicroPython"
+    },
+    {
+      "name": "serial://dev/tty.usbserial-110",
+      "uri": "serial://%2fdev%2ftty.usbserial-110/"
+    },
+    {
+      "name": "serial:/COM7",
+      "uri": "serial://com7/"
+    }
+  ],
+  "settings": {
+    "pymakr.autoConnect": false,
+    "files.exclude": {
+      "**/__pycache__": true,
+      "**/*.pyc": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "pycom.pymakr"
+    ],
+    "unwantedRecommendations": [
+      "pycom.pymakr-preview"
+    ]
+  }
+}

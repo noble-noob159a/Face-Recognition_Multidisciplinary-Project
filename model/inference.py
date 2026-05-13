@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from scipy.spatial.distance import cosine
 from .register import load_database
 from insightface.app import FaceAnalysis
+import time
 
 DEFAULT_DB_FILE = "./face_db/insightface_db.pkl"
 DEFAULT_THRESHOLD = 0.55
@@ -169,6 +170,8 @@ def main():
         cv2.imshow(DEFAULT_WINDOW_NAME, frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+
+        # time.sleep(1)
 
     video_capture.release()
     cv2.destroyAllWindows()
