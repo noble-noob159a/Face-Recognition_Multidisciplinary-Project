@@ -12,7 +12,7 @@ from insightface.app import FaceAnalysis
 import time
 
 DEFAULT_DB_FILE = "./face_db/insightface_db.pkl"
-DEFAULT_THRESHOLD = 0.55
+DEFAULT_THRESHOLD = 0.6
 DEFAULT_FRAME_SKIP = 3
 DEFAULT_CAMERA_INDEX = 0
 DEFAULT_CTX_ID = 0

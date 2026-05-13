@@ -45,7 +45,7 @@ python -m model.inference
 
 Useful arguments:
 - `--db-file`: database file path (default: `./face_db/insightface_db.pkl`).
-- `--threshold`: cosine distance threshold (default: `0.55`).
+- `--threshold`: cosine distance threshold (default: `0.6`).
 - `--frame-skip`: run detection every N frames (default: `3`).
 - `--camera-index`: webcam index (default: `0`).
 - `--ctx-id`: `0` for GPU, `-1` for CPU (default: `0`).
