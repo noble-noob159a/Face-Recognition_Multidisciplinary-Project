@@ -45,8 +45,7 @@ The recognition pipeline uses [InsightFace](https://github.com/deepinsight/insig
 │   ├── pymakr.conf               # Pymakr project config
 │   └── yolobit-micropython.code-workspace
 ├── requirements.txt
-├── start.sh                      # Convenience script to start model + dashboard on Unix shells
-└── test.py
+└── start.sh                      # Convenience script to start model + dashboard on Unix shells
 ```
 
 ## Requirements
