@@ -8,9 +8,7 @@ from dotenv import load_dotenv
 from scipy.spatial.distance import cosine
 from .register import load_database
 from .ws_server import broadcast_frame, run_ws_server_in_thread, stop_ws_server
-# from .serial_reader import start_serial_reader, stop_serial_reader
 from insightface.app import FaceAnalysis
-import time
 
 DEFAULT_DB_FILE = "./face_db/insightface_db.pkl"
 DEFAULT_THRESHOLD = 0.6
@@ -191,14 +189,12 @@ def main():
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-        # time.sleep(1)
 
     video_capture.release()
     cv2.destroyAllWindows()
     mqtt_client.loop_stop()
     mqtt_client.disconnect()
     stop_ws_server()
-    # stop_serial_reader()
 
 
 if __name__ == "__main__":
