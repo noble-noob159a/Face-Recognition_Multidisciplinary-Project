@@ -50,7 +50,7 @@ The recognition pipeline uses [InsightFace](https://github.com/deepinsight/insig
 
 ## Requirements
 
-- Python 3.11 is recommended, especially on Windows.
+- Python 3.11+ is recommended
 - A webcam for registration and inference.
 - An MQTT broker reachable from both the model and the Yolo:Bit board.
 - For the Yolo:Bit part: a Yolo:Bit board, USB cable, MicroPython firmware, and VS Code with the Pymakr extension.
